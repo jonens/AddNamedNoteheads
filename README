@@ -1,12 +1,11 @@
-AddNoteNameHeads
+AddNoteNameHeads v. 1.1
 ===================
 
 A plugin to add noteheads with alphabetic or solfege names inside of them.
 
-Noteheads are MuseScore StaffText elements (font:Bravura, size:19), so the named
-noteheads do not move or change if underlying notes change (rhythm or pitch).
-Use MuseScore Edit/Undo command to remove the noteheads.
+Noteheads are MuseScore StaffText elements, so the named noteheads do not move
+or change if underlying notes change (rhythm or pitch).  Use MuseScore Edit/Undo command to remove the noteheads.
 
-The plugin hides or changes the color of existing noteheads. Some named noteheads and their underlying noteheads might not appear to correspond exactly. Some manual adjustment might be necessary in scores with multiple voices on a staff, or for chords with multiple noteheads and offsets.
+The user may optionally hide or change the color of existing (underlying) noteheads. Some named noteheads and their underlying noteheads might not appear to correspond exactly. Some manual adjustment might be necessary in scores with multiple voices on a staff, or for chords with multiple noteheads and offsets.
 
-Follow MuseScore.org instructions for installation in proper directory for your system.
+Follow MuseScore.org instructions for installation in the proper directory for your system.

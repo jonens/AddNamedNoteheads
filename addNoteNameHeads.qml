@@ -1,5 +1,5 @@
 //=============================================================================
-//  AddNoteNameNoteHeads v. 1.0
+//  AddNoteNameNoteHeads v. 1.1
 //
 //  Copyright (C) 2015 Jon Ensminger
 //
@@ -19,6 +19,7 @@ import QtQuick 2.3
 import QtQuick.Controls 1.2
 import QtQuick.Dialogs 1.2
 import QtQuick.Layouts 1.1
+import QtQuick.Controls.Styles 1.3
 import MuseScore 1.0
 
 MuseScore {
@@ -43,7 +44,10 @@ MuseScore {
       property var nhType : 0
       property var bgType : 1
       property var noteHead
-      property var yOffset : -3.62
+      property var yOffset : 2.1
+      property var userWholeXOffset : 0.0
+      property var onStaffVisible : false
+      property var offStaffVisible : true
 
       //Whole / Half / Quarter -- no ##s or bbs -- F C G D A E B
       property var alphaCodesWhole : [0xE177,0xE16E,0xE17A,0xE171,0xE168,0xE174,0xE16B,
@@ -136,7 +140,7 @@ MuseScore {
               }
               if (duration >= 1920) {
                   durIndex = wholeIndex;
-                  wholeXOffset = 0.2;
+                  wholeXOffset = userWholeXOffset;
               }
               else if (duration >= 960) {
                   durIndex = halfIndex;
@@ -198,16 +202,17 @@ MuseScore {
               }
               nhText = String.fromCharCode(code);
               noteHead = newElement(Element.STAFF_TEXT);
-              noteHead.text  = "<font size=\"19\"/><font face=\"bravura\"/>"+nhText;
+              noteHead.text  = "<font size=\"24\"/><font face=\"bravura text\"/>"+nhText;
+              noteHead.userOff = Qt.point(0,0);
               noteHead.pos = Qt.point(note.pos.x + wholeXOffset, note.pos.y + yOffset);
               noteHead.color = noteHeadColor;
               if (note.line < 10 && note.line > -2) {
-                  note.visible = false;
+                  note.visible = onStaffVisible;
               }
               else {
-                  note.visible = true;
-                  note.color = bgColor;
+                  note.visible = offStaffVisible;
               }
+              note.color = bgColor;
               cursor.add(noteHead);
           }
       }
@@ -218,10 +223,15 @@ MuseScore {
       Dialog {
           id : selectDialog
           title : "Notehead Options"
-          width : 350
+          width: 400
           GridLayout {
               id : grid
-              columns : 2
+              columns : 3
+              Text {
+                  id : nhOptionsText
+                  text : qsTr("<b/>NoteHead Options")
+                  Layout.columnSpan : 3
+              }
               CheckBox {
                   id : alphaCheckBox
                   checked : true
@@ -236,14 +246,16 @@ MuseScore {
                   }
               }
               Text {
-                  id : spacer
+                  id : spText2
                   text : ""
+                  Layout.columnSpan : 2
               }
               CheckBox {
                   id : solfaCheckBox
                   checked : false
                   exclusiveGroup : exclusiveGroup
                   text : qsTr("Sol-Fa Noteheads")
+                  Layout.columnSpan : 3
                   onClicked : {
                       moveDoCheckBox.checked = false;
                       majorCheckBox.checked = true;
@@ -280,9 +292,15 @@ MuseScore {
                   checked : false
                   exclusiveGroup : tiExclusiveGroup
                   text : qsTr("Si")
+                  Layout.columnSpan : 2
               }
               Text {
-                  id : colorText
+                  id : colOptionsText
+                  text : qsTr("<b/>Color Options")
+                  Layout.columnSpan : 3
+              }
+              Text {
+                  id : nhColorText
                   text : qsTr("Notehead Color")
               }
               Rectangle {
@@ -290,12 +308,98 @@ MuseScore {
                   width : 80
                   height : 50
                   color : noteHeadColor
+                  Layout.columnSpan : 2
                   MouseArea {
                       anchors.fill: parent
                       onClicked: {
                         nhColorDialog.open();
                       }
                   }
+              }
+              Text {
+                  id : bgColorText
+                  text : qsTr("Note Background Color")
+              }
+              Rectangle {
+                  id : bgColorRect;
+                  width : 80
+                  height : 50
+                  color : bgColor
+                  Layout.columnSpan : 2
+                  MouseArea {
+                      anchors.fill: parent
+                      onClicked: {
+                        bgColorDialog.open();
+                      }
+                  }
+              }
+              Text {
+                  id : layoutOptionsText
+                  Layout.columnSpan : 3
+                  text : qsTr("<b/>Layout Options")
+              }
+              Text {
+                  id : yOffsetText
+                  text : qsTr("Vertical Offset")
+              }
+              SpinBox {
+                  id : yOffsetSpinBox
+                  decimals : 2
+                  maximumValue : 6.00
+                  minimumValue : -6.00
+                  stepSize: 0.02
+                  value : yOffset
+                  Layout.columnSpan : 2
+                  style: SpinBoxStyle{
+                      background: Rectangle {
+                      implicitWidth: 80
+                      implicitHeight: 25
+                      border.color: "gray"
+                      color : "#eeeeee"
+                      radius: 2
+                      }
+                  }
+                  onEditingFinished : { yOffset = value; console.log("yOffset " + yOffset);}
+              }
+              Text {
+                  id : wnOffsetText
+                  text : qsTr("Whole Note X Offset")
+              }
+              SpinBox {
+                  id : wnOffsetSpinBox
+                  decimals : 2
+                  maximumValue : 3.00
+                  minimumValue : -3.00
+                  stepSize: 0.02
+                  value : userWholeXOffset
+                  Layout.columnSpan : 2
+                  style: SpinBoxStyle{
+                      background: Rectangle {
+                      implicitWidth: 80
+                      implicitHeight: 25
+                      border.color: "gray"
+                      color : "#eeeeee"
+                      radius: 2
+                      }
+                  }
+                  onEditingFinished : { userWholeXOffset = value;console.log("wXOffset " + userWholeXOffset);}
+              }
+              Text {
+                  id : hiddenOptionsText
+                  text : qsTr("<b/>Background Note Hide Options")
+                  Layout.columnSpan : 3
+              }
+              CheckBox {
+                  id : onHideCheckBox
+                  checked : true
+                  text : qsTr("Hide On Staff")
+                  onClicked : { setHidden() }
+              }
+              CheckBox {
+                  id : offHideCheckBox
+                  checked : false
+                  text : qsTr("Hide Off Staff")
+                  onClicked : { setHidden() }
               }
           }
           standardButtons: StandardButton.Cancel | StandardButton.Ok
@@ -311,21 +415,26 @@ MuseScore {
           width : 470
           Text {
               id : readmeText
-              text : qsTr("<b>Description:</b>  Places a named Notehead on existing notes in a selection,<br/>or the whole score if no selection.<br/>
-              <ol>
-              <li>In Dialog, select:
+              text : qsTr("<b>Description:</b>  Places a named Notehead on existing notes in a selection,<br/>or the whole score if no selection.<br/><br/>
+              <b>User Options:</b><br/>
               <ul>
               <li>Alpha- or Solfa- Notehead type
               <li>Major or Minor key (for Solfa)
               <li>Ti or Si (for Solfa)
               <li>Fixed or Movable Do (for Solfa)
               <li>Notehead color
+              <li>Background note color
+              <li>Notehead vertical offset (for fine tuning)
+              <li>Whole note horizontal offset (for fine tuning)
+              <li>Hide/unhide background notes on staff
+              <li>Hide/unhide background notes off staff (leger lines)
               </ul>
               <br/>
-              <li>Use Edit\/Undo in MuseScore to remove named Noteheads.
-              </ol>
-              <br/>
-              <b>Note:</b> Named Noteheads are Staff Text elements, and will not change<br/>position or name if the underlying note pitches change. To change<br/>the named Noteheads' positions or names, use the Undo\ncommand<br/>and re-run the plugin after making the changes to the underlying notes.")
+              Use Edit\/Undo or Select/All similar elements in MuseScore to<br/>remove named Noteheads.
+              <br/><br/>
+              Some noteheads might require manual repositioning after the plugin<br/>is run.  If all noteheads are slightly misaligned vertically, try removing<br/>all noteheads (Edit/Undo or Select/All similar elements/Cut), adjust<br/>the Notehead vertical offset in the plugin's Options dialog, then run<br/>the plugin again. Lower numeric offset values move the noteheads<br/>up, and higher numeric values move the noteheads down.
+              <br/><br/>
+              <b>Please Note:</b> Named Noteheads are Staff Text elements, and will not<br/>change position or name if the underlying note pitches change.<br/>To change note names/positions, use the Undo command and<br/>re-run the plugin after making the changes to the underlying notes.")
           }
           standardButtons: StandardButton.Cancel | StandardButton.Ok
           onAccepted : selectDialog.open();
@@ -334,17 +443,38 @@ MuseScore {
 
       ColorDialog {
           id: nhColorDialog
-          title: "Notehead Color"
+          title: qsTr("Notehead Color")
           onAccepted : changeColor(nhType)
           onRejected: Qt.quit();
       }
 
-      function changeColor() {
-          nhColorRect.color = nhColorDialog.color;
-          noteHeadColor = nhColorDialog.color;
+      ColorDialog {
+          id: bgColorDialog
+          title: qsTr("Note Background Color")
+          onAccepted : changeColor(bgType)
+          onRejected: Qt.quit();
+      }
+
+      function changeColor(type) {
+          if (type == nhType) {
+              nhColorRect.color = nhColorDialog.color;
+              noteHeadColor = nhColorDialog.color;
+          }
+          if (type == bgType) {
+              bgColorRect.color = bgColorDialog.color;
+              bgColor = bgColorDialog.color;
+          }
+      }
+
+      function setHidden() {
+          onStaffVisible = !onHideCheckBox.checked;
+          offStaffVisible = !offHideCheckBox.checked;
+
       }
 
       function applyFunction() {
+          yOffset = yOffsetSpinBox.value;
+          userWholeXOffset = wnOffsetSpinBox.value;
           if (majorCheckBox.checked) {
               majorKey = true;
               console.log("majorChecked " + majorCheckBox.checked + " majorKey " + majorKey);
