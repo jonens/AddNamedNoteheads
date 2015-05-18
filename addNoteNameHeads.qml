@@ -206,12 +206,16 @@ MuseScore {
               noteHead.userOff = Qt.point(0,0);
               noteHead.pos = Qt.point(note.pos.x + wholeXOffset, note.pos.y + yOffset);
               noteHead.color = noteHeadColor;
+              var visible;
               if (note.line < 10 && note.line > -2) {
-                  note.visible = onStaffVisible;
+                  //note.visible = onStaffVisible;
+                  visible = onStaffVisible;
               }
               else {
-                  note.visible = offStaffVisible;
+                  //note.visible = offStaffVisible;
+                  visible = offStaffVisible;
               }
+              note.visible = visible;
               note.color = bgColor;
               cursor.add(noteHead);
           }
